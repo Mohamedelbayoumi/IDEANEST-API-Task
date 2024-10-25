@@ -6,7 +6,6 @@ export const jwtModuleAsyncOptions: JwtModuleAsyncOptions = {
   useFactory: (configService: ConfigService) => ({
     secret: configService.get('ACCESS_TOKEN_SECRET_KEY'),
     signOptions: { expiresIn: '15m' },
-    global: true,
   }),
   inject: [ConfigService],
 };

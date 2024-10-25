@@ -16,9 +16,11 @@ export class Organization {
       {
         name: { type: String },
         email: { type: String },
-        access_level: { type: AccessLevel },
+        access_level: { type: String, enum: AccessLevel },
       },
     ],
+    _id: false,
+    required: true,
   })
   organization_members: OrganizationMembers[];
 }

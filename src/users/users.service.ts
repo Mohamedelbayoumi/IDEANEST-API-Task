@@ -17,6 +17,8 @@ export class UsersService {
   }
 
   async findUserByEmail(email: string) {
-    return await this.userModel.findOne({ email }).select('email password');
+    return await this.userModel
+      .findOne({ email })
+      .select('name email password');
   }
 }
