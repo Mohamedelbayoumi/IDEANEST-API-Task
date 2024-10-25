@@ -5,6 +5,7 @@ import {
   Body,
   Request,
   Get,
+  Param,
   Put,
   Delete,
 } from '@nestjs/common';
@@ -35,7 +36,21 @@ export class OrganizationsController {
   }
 
   @Get('/:organization_id')
-  async getOne() {}
+  async getOne(
+    @Param('organization_id') organizationId: string,
+    @Request() req,
+  ) {
+    const organization = await this.organizationsService.getOneOrganization(
+      organizationId,
+      req.userEmail,
+    );
+    return {
+      organization_id: organization._id,
+      name: organization.name,
+      description: organization.description,
+      organization_members: organization.organization_members,
+    };
+  }
 
   @Get()
   async getAll() {}

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -38,5 +38,21 @@ export class OrganizationsService {
     console.log(organization);
 
     return organization._id;
+  }
+
+  async getOneOrganization(id: string, userEmail: string) {
+    const organization = await this.organizationModel
+      .findById(id)
+      .select('name description organization_members');
+
+    organization.organization_members.forEach((member) => {
+      if (userEmail !== member.email) {
+        throw new UnauthorizedException(
+          'You are not allowed to access this resource',
+        );
+      }
+    });
+
+    return organization;
   }
 }
