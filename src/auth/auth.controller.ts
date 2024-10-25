@@ -3,6 +3,7 @@ import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user-dto';
 import { SigninUserDto } from './dtos/login-user-dto';
+import { RefreshTokenDto } from './dtos/refresh-token-dto';
 
 @Controller()
 export class AuthController {
@@ -26,6 +27,17 @@ export class AuthController {
       message: 'User loggedin successfully',
       access_token,
       refresh_token,
+    };
+  }
+
+  @Post('refresh-token')
+  async rotateRefreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    const { access_token, refresh_token } =
+      await this.authService.rotateRefreshToken(refreshTokenDto.refresh_token);
+    return {
+      message: 'refresh token rotation process is succeeded',
+      access_token,
+      refreshTokenDto,
     };
   }
 }
