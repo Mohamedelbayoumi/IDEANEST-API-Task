@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { BcryptjsModule } from 'src/bcryptjs/bcryptjs.module';
 import { jwtModuleAsyncOptions } from '../common/configs/jwt.config';
+import { RedisModule } from '../redis/redis.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { jwtModuleAsyncOptions } from '../common/configs/jwt.config';
     BcryptjsModule,
     JwtModule.registerAsync(jwtModuleAsyncOptions),
     ConfigModule.forRoot(),
+    RedisModule.forRoot(),
   ],
   providers: [AuthService],
   controllers: [AuthController],

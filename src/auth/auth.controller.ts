@@ -1,9 +1,10 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Request, UseGuards } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dtos/create-user-dto';
 import { SigninUserDto } from './dtos/login-user-dto';
 import { RefreshTokenDto } from './dtos/refresh-token-dto';
+import { AuthGuard } from './guards/auth.guard';
 
 @Controller()
 export class AuthController {
@@ -39,5 +40,18 @@ export class AuthController {
       access_token,
       refreshTokenDto,
     };
+  }
+
+  @Post('/revoke-refresh-token')
+  @UseGuards(AuthGuard)
+  async revokeRefreshtoken(
+    @Request() req,
+    @Body() refreshTokenDto: RefreshTokenDto,
+  ) {
+    await this.authService.revokeRefreshtoken(
+      req.userEmail,
+      refreshTokenDto.refresh_token,
+    );
+    return { message: 'refresh token deleted successfully' };
   }
 }

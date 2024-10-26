@@ -2,9 +2,12 @@ import {
   Injectable,
   ConflictException,
   UnauthorizedException,
+  Inject,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { RedisClientType } from 'redis';
 
 import { UsersService } from '../users/users.service';
 import { BcryptjsService } from '../bcryptjs/bcryptjs.service';
@@ -17,6 +20,7 @@ export class AuthService {
     private bcryptjsService: BcryptjsService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    @Inject('REDIS_CLIENT') private redisClient: RedisClientType,
   ) {}
 
   async signup(name: string, email: string, password: string) {
@@ -51,7 +55,11 @@ export class AuthService {
       sub: user.email,
     };
 
-    return await this.issueTokens(payload);
+    const { access_token, refresh_token } = await this.issueTokens(payload);
+
+    await this.redisClient.setEx(user.email, 172800, refresh_token); // 172800 sec = 2 days
+
+    return { access_token, refresh_token };
   }
 
   async rotateRefreshToken(refreshToken: string) {
@@ -67,7 +75,25 @@ export class AuthService {
       sub: payload.sub as string,
     };
 
-    return await this.issueTokens(subPaylod);
+    const storedRefreshtoken = await this.redisClient.get(subPaylod.sub);
+
+    if (storedRefreshtoken !== refreshToken) {
+      throw new UnauthorizedException('Wrong Token');
+    }
+
+    const { access_token, refresh_token } = await this.issueTokens(subPaylod);
+
+    await this.redisClient.setEx(subPaylod.sub, 172800, refresh_token); // 172800 sec = 2 days
+
+    return { access_token, refresh_token };
+  }
+
+  async revokeRefreshtoken(userEmail: string, refreshToken: string) {
+    const result = await this.redisClient.del(userEmail);
+
+    if (result === 0) {
+      throw new NotFoundException('refresh token is already deleted');
+    }
   }
 
   private refreshTokenSecret: string = this.configService.get(
