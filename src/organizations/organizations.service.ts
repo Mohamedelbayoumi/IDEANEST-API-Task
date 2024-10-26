@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -41,6 +45,10 @@ export class OrganizationsService {
       .findById(id)
       .select('name description organization_members');
 
+    if (!organization) {
+      throw new NotFoundException('organization does not exist ');
+    }
+
     organization.organization_members.forEach((member) => {
       if (userEmail !== member.email) {
         throw new UnauthorizedException(
@@ -55,7 +63,12 @@ export class OrganizationsService {
   async getAll(userEmail: string) {
     const organizations = await this.organizationModel
       .find()
-      .select('name description organization_members');
+      .select('name description organization_members')
+      .lean();
+
+    if (!organizations) {
+      throw new NotFoundException('there is no organization found ');
+    }
 
     const allowedOrganizations = [];
 
@@ -86,6 +99,10 @@ export class OrganizationsService {
       .findById(id)
       .select('name decription organization_members');
 
+    if (!organization) {
+      throw new NotFoundException('organization does not exist ');
+    }
+
     const organizationMember = organization.organization_members[0];
 
     if (organizationMember.email !== userEmail) {
@@ -102,6 +119,10 @@ export class OrganizationsService {
 
   async delete(id: string, userEmail: string) {
     const organization = await this.organizationModel.findById(id);
+
+    if (!organization) {
+      throw new NotFoundException('organization does not exist ');
+    }
 
     const organizationMember = organization.organization_members[0];
 
