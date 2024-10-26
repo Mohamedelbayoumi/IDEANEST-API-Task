@@ -53,7 +53,12 @@ export class OrganizationsController {
   }
 
   @Get()
-  async getAll() {}
+  async getAll(@Request() req) {
+    const organizations = await this.organizationsService.getAllOrganizations(
+      req.userEmail,
+    );
+    return organizations;
+  }
 
   @Put('/:organization_id')
   async update() {}

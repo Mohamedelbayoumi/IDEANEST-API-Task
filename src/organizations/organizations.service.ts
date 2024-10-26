@@ -55,4 +55,28 @@ export class OrganizationsService {
 
     return organization;
   }
+
+  async getAllOrganizations(userEmail: string) {
+    const organizations = await this.organizationModel
+      .find()
+      .select('name description organization_members');
+
+    const allowedOrganizations = [];
+
+    organizations.forEach((organization) => {
+      for (let member of organization.organization_members) {
+        if (userEmail === member.email) {
+          allowedOrganizations.push({
+            organization_id: organization._id,
+            name: organization.name,
+            description: organization.description,
+            organization_members: organization.organization_members,
+          });
+          break;
+        }
+      }
+    });
+
+    return allowedOrganizations;
+  }
 }
