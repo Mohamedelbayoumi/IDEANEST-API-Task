@@ -14,6 +14,7 @@ import { OrganizationsService } from './organizations.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { CreateOrganizationDto } from './dtos/create-organization-dto';
 import { UpdateOrganizationDto } from './dtos/update-organization-dto';
+import { InviteMemberDto } from './dtos/invite-member-dto';
 
 @Controller('/organization')
 @UseGuards(AuthGuard)
@@ -90,5 +91,16 @@ export class OrganizationsController {
   }
 
   @Post('/:organization_id/invite')
-  async invite() {}
+  async inviteMember(
+    @Param('organization_id') organizationId: string,
+    @Body() inviteMemberDto: InviteMemberDto,
+    @Request() req,
+  ) {
+    await this.organizationsService.inviteMember(
+      organizationId,
+      inviteMemberDto.email,
+      req.userEmail,
+    );
+    return { message: 'User has been invited to the organization' };
+  }
 }

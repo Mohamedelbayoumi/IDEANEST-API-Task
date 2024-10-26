@@ -49,15 +49,15 @@ export class OrganizationsService {
       throw new NotFoundException('organization does not exist ');
     }
 
-    organization.organization_members.forEach((member) => {
-      if (userEmail !== member.email) {
-        throw new UnauthorizedException(
-          'You are not allowed to access this resource',
-        );
+    for (let member of organization.organization_members) {
+      if (userEmail === member.email) {
+        return organization;
       }
-    });
+    }
 
-    return organization;
+    throw new UnauthorizedException(
+      'You are not allowed to access this resource',
+    );
   }
 
   async getAll(userEmail: string) {
@@ -132,5 +132,37 @@ export class OrganizationsService {
       );
     }
     await organization.deleteOne();
+  }
+
+  async inviteMember(
+    organizationId: string,
+    memberEmail: string,
+    userEmail: string,
+  ) {
+    const organization = await this.organizationModel.findById(organizationId);
+
+    if (!organization) {
+      throw new NotFoundException('organization does not exist ');
+    }
+
+    const member = await this.usersService.findUserByEmail(memberEmail);
+
+    if (!member) {
+      throw new NotFoundException('User is not found to be invited');
+    }
+
+    if (organization.organization_members[0].email !== userEmail) {
+      throw new UnauthorizedException(
+        'You are not allowed to invite users to this organization',
+      );
+    }
+
+    organization.organization_members.push({
+      name: member.name,
+      email: member.email,
+      access_level: AccessLevel.ReadOnly,
+    });
+
+    await organization.save();
   }
 }
