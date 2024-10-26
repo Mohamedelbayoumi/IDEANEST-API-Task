@@ -99,4 +99,17 @@ export class OrganizationsService {
     await organization.save();
     return organization;
   }
+
+  async delete(id: string, userEmail: string) {
+    const organization = await this.organizationModel.findById(id);
+
+    const organizationMember = organization.organization_members[0];
+
+    if (organizationMember.email !== userEmail) {
+      throw new UnauthorizedException(
+        'You are not allowed to delete this resource',
+      );
+    }
+    await organization.deleteOne();
+  }
 }

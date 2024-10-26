@@ -81,7 +81,13 @@ export class OrganizationsController {
   }
 
   @Delete('/:organization_id')
-  async delete() {}
+  async delete(
+    @Param('organization_id') organizationId: string,
+    @Request() req,
+  ) {
+    await this.organizationsService.delete(organizationId, req.userEmail);
+    return { message: 'organization deleted successfully' };
+  }
 
   @Post('/:organization_id/invite')
   async invite() {}
