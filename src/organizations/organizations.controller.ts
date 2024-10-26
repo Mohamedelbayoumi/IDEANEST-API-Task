@@ -13,6 +13,7 @@ import {
 import { OrganizationsService } from './organizations.service';
 import { AuthGuard } from '../auth/guards/auth.guard';
 import { CreateOrganizationDto } from './dtos/create-organization-dto';
+import { UpdateOrganizationDto } from './dtos/update-organization-dto';
 
 @Controller('/organization')
 @UseGuards(AuthGuard)
@@ -26,7 +27,7 @@ export class OrganizationsController {
   ) {
     const { name, description } = createOrganizationDto;
 
-    const organizationId = await this.organizationsService.createOrganization(
+    const organizationId = await this.organizationsService.create(
       name,
       description,
       req.userEmail,
@@ -40,7 +41,7 @@ export class OrganizationsController {
     @Param('organization_id') organizationId: string,
     @Request() req,
   ) {
-    const organization = await this.organizationsService.getOneOrganization(
+    const organization = await this.organizationsService.getOne(
       organizationId,
       req.userEmail,
     );
@@ -54,14 +55,30 @@ export class OrganizationsController {
 
   @Get()
   async getAll(@Request() req) {
-    const organizations = await this.organizationsService.getAllOrganizations(
-      req.userEmail,
-    );
+    const organizations = await this.organizationsService.getAll(req.userEmail);
     return organizations;
   }
 
   @Put('/:organization_id')
-  async update() {}
+  async update(
+    @Param('organization_id') organizationId: string,
+    @Body() updateOrganizationDto: UpdateOrganizationDto,
+    @Request() req,
+  ) {
+    const { name, description } = updateOrganizationDto;
+    const organization = await this.organizationsService.update(
+      organizationId,
+      name,
+      description,
+      req.userEmail,
+    );
+
+    return {
+      organization_id: organization._id,
+      name: organization.name,
+      description: organization.description,
+    };
+  }
 
   @Delete('/:organization_id')
   async delete() {}

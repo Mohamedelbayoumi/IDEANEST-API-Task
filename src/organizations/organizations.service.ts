@@ -14,11 +14,7 @@ export class OrganizationsService {
     private usersService: UsersService,
   ) {}
 
-  async createOrganization(
-    name: string,
-    description: string,
-    userEmail: string,
-  ) {
+  async create(name: string, description: string, userEmail: string) {
     const user = await this.usersService.findUserByEmail(userEmail);
 
     const organizationMembers = [
@@ -40,7 +36,7 @@ export class OrganizationsService {
     return organization._id;
   }
 
-  async getOneOrganization(id: string, userEmail: string) {
+  async getOne(id: string, userEmail: string) {
     const organization = await this.organizationModel
       .findById(id)
       .select('name description organization_members');
@@ -56,7 +52,7 @@ export class OrganizationsService {
     return organization;
   }
 
-  async getAllOrganizations(userEmail: string) {
+  async getAll(userEmail: string) {
     const organizations = await this.organizationModel
       .find()
       .select('name description organization_members');
@@ -78,5 +74,29 @@ export class OrganizationsService {
     });
 
     return allowedOrganizations;
+  }
+
+  async update(
+    id: string,
+    name: string,
+    description: string,
+    userEmail: string,
+  ) {
+    const organization = await this.organizationModel
+      .findById(id)
+      .select('name decription organization_members');
+
+    const organizationMember = organization.organization_members[0];
+
+    if (organizationMember.email !== userEmail) {
+      throw new UnauthorizedException(
+        'You are not allowed to update this resource',
+      );
+    }
+
+    organization.name = name;
+    organization.description = description;
+    await organization.save();
+    return organization;
   }
 }
